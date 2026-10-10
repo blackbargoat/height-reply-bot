@@ -5,7 +5,7 @@ import { replyFor } from "./classify.mjs";
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKEN = process.env.IG_ACCESS_TOKEN;
 const POSTS = 5;            // newest posts to watch
-const MAX_PER_RUN = 10;     // cap per run so Instagram doesn't see a huge burst
+const MAX_PER_RUN = 20;     // cap per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
 
 async function get(path, params = {}) {
@@ -33,7 +33,10 @@ outer: for (const post of media.data ?? []) {
     if (sent >= MAX_PER_RUN) break outer;
     const who = c.from?.username ?? c.username;
     if (who === me.username || c.from?.id === me.user_id) continue;
-    if ((c.replies?.data ?? []).length > 0) continue; // already has a reply (yours or anyone's): leave it alone
+    const replies = c.replies?.data ?? [];
+    const byMe = replies.some((r) => r.from?.id === me.user_id || (r.from?.username ?? r.username) === me.username);
+    const unknown = replies.some((r) => !(r.from?.username ?? r.username));
+    if (byMe || unknown) continue; // you (or the bot) already answered it
     const message = replyFor(c.text ?? "", who);
     if (!message) continue;
     if (DRY_RUN) { console.log("[dry run]", who, JSON.stringify(c.text), "→", message); sent++; continue; }
