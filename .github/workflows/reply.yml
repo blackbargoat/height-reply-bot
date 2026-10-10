@@ -1,7 +1,7 @@
 name: Reply to height comments
 on:
   schedule:
-    - cron: "*/30 * * * *"   # every 30 min (UTC); GitHub may start runs a few minutes late
+    - cron: "*/5 * * * *"   # every 5 min (UTC); GitHub may start runs a few minutes late
   workflow_dispatch:
     inputs:
       dry_run:

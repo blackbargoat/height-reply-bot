@@ -5,7 +5,7 @@ import { replyFor } from "./classify.mjs";
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKEN = process.env.IG_ACCESS_TOKEN;
 const POSTS = 5;            // newest posts to watch
-const MAX_PER_RUN = 25;     // cap per run so Instagram doesn't see a huge burst
+const MAX_PER_RUN = 10;     // cap per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
 
 async function get(path, params = {}) {
