@@ -12,7 +12,7 @@ export function parse(text) {
     t.match(/\b([4-7])\s*(?:'|ft|foot|feet)(?!\s*\d)/);                    // 6'  6ft
   if (m) { cm = (Number(m[1]) * 12 + Number(m[2] ?? 0)) * 2.54; t = t.replace(m[0], " "); }
   else {
-    const c = t.match(/\b(1[2-9]\d|2[0-2]\d)\s*cm\b/) || t.match(/\b(1[3-9]\d|2[0-2]\d)\b/);
+    const c = t.match(/\b(1[2-9]\d|2[0-2]\d)\s*cm\b/) || t.match(/\b(1[5-9]\d|20\d)\b/);
     if (c) { cm = Number(c[1]); t = t.replace(c[0], " "); }
   }
   if (cm == null) return null;
@@ -40,5 +40,5 @@ export function replyFor(text, username) {
   const e = emoji(p);
   const extras = EXTRA[e];
   const extra = extras[Math.floor(Math.random() * extras.length)];
-  return `@${username} ${e}${extra}`;
+  return username ? `@${username} ${e}${extra}` : `${e}${extra}`;
 }
