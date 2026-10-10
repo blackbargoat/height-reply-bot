@@ -1,0 +1,22 @@
+name: Reply to height comments
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 min (UTC); GitHub may start runs a few minutes late
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only print what it would reply"
+        type: boolean
+        default: false
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node src/run.mjs
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
