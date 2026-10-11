@@ -41,18 +41,29 @@ export function emoji({ cm, age }) {
   return cm < floor ? "🔴" : "🔵";
 }
 
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const EXTRA = {
-  "🟢": ["", "", " 🔥", " giant fr"],
-  "🔵": ["", "", " if you lock in", " still growing"],
-  "🔴": ["", "", " lock in now", " not over yet"],
+  "🟢": ["", "", " 🔥", " giant fr", " tall genes", " already built different"],
+  "🔵": ["", "", " if you lock in", " still growing", " plenty of time", " not done yet"],
+  "🔴": ["", "", " lock in now", " not over yet", " still time", " gotta lock in"],
 };
-
-/** Reply text for a comment, or null if it doesn't contain a height. */
+// Waitlist CTA, mixed up so no two replies read the same. Link lives in the bio, not the comment.
+const CTAS = [
+  "join the GoPeak waitlist, link in bio", "GoPeak waitlist is in my bio", "get on the GoPeak waitlist (bio)",
+  "see how tall you'll actually get, GoPeak waitlist in bio", "GoPeak predicts your height, waitlist in my bio",
+  "sign up for GoPeak in my bio", "waitlist for GoPeak in bio", "check the link in my bio for GoPeak",
+  "GoPeak drops soon, waitlist in bio", "find your max height on GoPeak, link in bio", "tap my bio and join GoPeak",
+  "GoPeak will show your real potential, bio", "get early access to GoPeak in my bio", "lock in with GoPeak, waitlist in bio",
+];
+const TAIL = ["", "", "", " 👆", " 📈", " 🔗", " fr", " 🙏"];
+function cta() {
+  const line = pick(CTAS);
+  return (Math.random() < 0.4 ? line[0].toUpperCase() + line.slice(1) : line) + pick(TAIL);
+}
 export function replyFor(text, username) {
   const p = parse(text);
   if (!p) return null;
   const e = emoji(p);
-  const extras = EXTRA[e];
-  const extra = extras[Math.floor(Math.random() * extras.length)];
-  return username ? `@${username} ${e}${extra}` : `${e}${extra}`;
+  const body = `${e}${pick(EXTRA[e])}${pick([" ", " ", " · ", " | ", ". "])}${cta()}`;
+  return username ? `@${username} ${body}` : body;
 }
