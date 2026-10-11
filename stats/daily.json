@@ -11,23 +11,23 @@
  {
   "day": "2026-10-11",
   "account": "mav.tallteen",
-  "replies": 60,
+  "replies": 61,
   "followers": 192,
   "posts": 37,
   "likes_recent": 210,
-  "comments_recent": 291,
-  "updated": "2026-10-11T14:41:28.616Z",
+  "comments_recent": 292,
+  "updated": "2026-10-11T14:46:31.289Z",
   "backfilled": true
  },
  {
   "day": "2026-10-11",
   "account": "maverick.pranks",
-  "replies": 540,
-  "followers": 57,
+  "replies": 576,
+  "followers": 59,
   "posts": 1,
-  "likes_recent": 230,
-  "comments_recent": 1515,
-  "updated": "2026-10-11T14:41:28.616Z",
+  "likes_recent": 232,
+  "comments_recent": 1584,
+  "updated": "2026-10-11T14:46:31.289Z",
   "backfilled": true
  }
 ]
