@@ -28,7 +28,7 @@ export function parse(text) {
     const c = t.match(/\b(1[2-9]\d|2[0-2]\d)\s*cm\b/) || t.match(/\b(1[5-9]\d|20\d)\b/);
     if (c) { cm = Number(c[1]); t = t.replace(c[0], " "); }
   }
-  if (cm == null) return null;
+  if (cm == null || cm > 214) return null; // 7'0"+ is a joke comment
   const a = t.match(/\b(\d{1,2})\b/);
   const age = a && Number(a[1]) >= 8 && Number(a[1]) <= 30 ? Number(a[1]) : null;
   return { cm, age };
