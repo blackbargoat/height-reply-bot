@@ -35,15 +35,24 @@ async function runAccount() {
   outer: for (const post of media.data ?? []) {
     // Page through all comments (newest posts can have hundreds).
     const comments = { data: [] };
-    let page = await get(`${post.id}/comments`, { fields: "id,text,username,from{id,username},replies{id,from{id,username},username}", limit: 50 });
+    let page = await get(`${post.id}/comments`, { fields: "id,text,username,from{id,username},replies{id,text,from{id,username},username}", limit: 50 });
     for (let i = 0; i < 30 && page; i++) {
       comments.data.push(...(page.data ?? []));
       page = page.paging?.next ? await (await fetch(page.paging.next)).json() : null;
     }
     console.log(`post ${post.timestamp?.slice(0, 16)} ${post.media_product_type}: ${post.comments_count} comments, API returned ${comments.data?.length ?? 0}`);
     if (DRY_RUN) for (const c of comments.data ?? []) console.log("   ", c.from?.username ?? c.username ?? "(no username)", JSON.stringify(c.text), `${c.replies?.data?.length ?? 0} replies`);
+    // Instagram sometimes lists our replies as separate top-level comments ("@name ...") instead of under the
+    // original, so also treat anyone we've @-mentioned on this post (or replied to before) as answered.
+    const answered = new Set(log.map((x) => x.parent));
+    const mentioned = new Set();
+    for (const c of comments.data ?? []) {
+      const mine = [c, ...(c.replies?.data ?? [])].filter((x) => x.from?.id === me.user_id || (x.from?.username ?? x.username) === me.username);
+      for (const m of mine) { const at = (m.text ?? "").match(/^@([\w.]+)/); if (at) mentioned.add(at[1].toLowerCase()); }
+    }
     for (const c of comments.data ?? []) {
       if (sent >= MAX_PER_RUN) break outer;
+      if (answered.has(c.id) || mentioned.has((c.from?.username ?? c.username ?? "").toLowerCase())) continue;
       const who = c.from?.username ?? c.username;
       if (who === me.username || c.from?.id === me.user_id) continue;
       const replies = c.replies?.data ?? [];
@@ -61,6 +70,7 @@ async function runAccount() {
       console.log(who, JSON.stringify(c.text), "→", message, res.status);
       if (!res.ok) { console.log("Instagram refused a reply, pausing this account:", await res.text()); break outer; }
       const { id } = await res.json().catch(() => ({}));
+      mentioned.add(who.toLowerCase());
       if (id) log.push({ id, parent: c.id, user: who, account: me.username, style: r.style, emoji: r.emoji, at: new Date().toISOString() });
       sent++;
       await new Promise((r) => setTimeout(r, 2500 + Math.random() * 3000));
