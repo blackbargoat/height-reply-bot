@@ -8,10 +8,13 @@ on:
         description: "Only print what it would reply"
         type: boolean
         default: false
+concurrency:
+  group: reply   # never two runs at once, so nobody gets replied to twice
+  cancel-in-progress: false
 jobs:
   reply:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

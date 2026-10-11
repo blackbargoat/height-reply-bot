@@ -6,8 +6,8 @@ import { replyFor } from "./classify.mjs";
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/.test(k)).sort()
   .map((k) => process.env[k]).filter(Boolean);
-const POSTS = 5;            // newest posts to watch
-const MAX_PER_RUN = 35;     // cap per account per run so Instagram doesn't see a huge burst
+const POSTS = 10;           // newest posts to watch
+const MAX_PER_RUN = 60;     // cap per account per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
 
 let TOKEN;
@@ -50,7 +50,7 @@ async function runAccount() {
       });
       console.log(who, JSON.stringify(c.text), "→", message, res.status);
       sent++;
-      await new Promise((r) => setTimeout(r, 3000 + Math.random() * 4000));
+      await new Promise((r) => setTimeout(r, 2500 + Math.random() * 3000));
     }
   }
   console.log(`done, ${sent} replies`);
