@@ -56,7 +56,15 @@ async function runAccount() {
     }
   }
   console.log(`done, ${sent} replies`);
-  stats.push({ me, media: media.data ?? [], sent });
+  // Views need the instagram_business_manage_insights permission; record null if the token doesn't have it.
+  let views = null, reach = null;
+  try {
+    const since = Math.floor(Date.UTC(...new Date().toISOString().slice(0, 10).split("-").map((v, i) => (i === 1 ? v - 1 : +v))) / 1000);
+    const ins = await get(`${me.user_id}/insights`, { metric: "views,reach", period: "day", metric_type: "total_value", since, until: Math.floor(Date.now() / 1000) });
+    for (const m of ins.data ?? []) { if (m.name === "views") views = m.total_value?.value ?? null; if (m.name === "reach") reach = m.total_value?.value ?? null; }
+    console.log(`insights @${me.username}: views today ${views}, reach ${reach}`);
+  } catch (e) { console.log(`insights @${me.username} unavailable: ${e.message}`); }
+  stats.push({ me, media: media.data ?? [], sent, views, reach });
   if (sent >= MAX_PER_RUN) capped = true;
 }
 
@@ -69,7 +77,7 @@ for (TOKEN of TOKENS) {
 if (!DRY_RUN) {
   const file = "stats/daily.json", day = new Date().toISOString().slice(0, 10);
   let rows = []; try { rows = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
-  for (const { me, media, sent } of stats) {
+  for (const { me, media, sent, views, reach } of stats) {
     let row = rows.find((r) => r.day === day && r.account === me.username);
     if (!row) rows.push((row = { day, account: me.username, replies: 0 }));
     row.followers = me.followers_count ?? null;
@@ -77,6 +85,8 @@ if (!DRY_RUN) {
     row.replies += sent;
     row.likes_recent = media.reduce((a, m) => a + (m.like_count ?? 0), 0);
     row.comments_recent = media.reduce((a, m) => a + (m.comments_count ?? 0), 0);
+    if (views != null) row.views = views;
+    if (reach != null) row.reach = reach;
     row.updated = new Date().toISOString();
   }
   fs.mkdirSync("stats", { recursive: true });
