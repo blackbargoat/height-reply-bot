@@ -7,7 +7,7 @@ import fs from "node:fs";
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/.test(k)).sort()
   .map((k) => process.env[k]).filter(Boolean);
-const POSTS = 10;           // newest posts to watch
+const POSTS = 3;            // newest posts to watch (new uploads get picked up automatically)
 const MAX_PER_RUN = 60;     // cap per account per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
 
@@ -36,7 +36,7 @@ async function runAccount() {
     // Page through all comments (newest posts can have hundreds).
     const comments = { data: [] };
     let page = await get(`${post.id}/comments`, { fields: "id,text,username,from{id,username},replies{id,text,from{id,username},username}", limit: 50 });
-    for (let i = 0; i < 30 && page; i++) {
+    for (let i = 0; i < 60 && page; i++) {
       comments.data.push(...(page.data ?? []));
       page = page.paging?.next ? await (await fetch(page.paging.next)).json() : null;
     }

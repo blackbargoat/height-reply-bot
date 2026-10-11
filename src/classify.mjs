@@ -25,8 +25,11 @@ export function parse(text) {
     cm = (feet * 12 + inches) * 2.54;
     t = t.replace(FT, " ");                                       // drop every height so feet/inches aren't read as an age
   } else if (!PARENTS.test(t)) {
+    // Metres like "1,92" / "1.85m" / "1,92cm" (common outside the US)
+    const mt = t.match(/\b([12])[.,](\d{2})\s*(?:m|cm|meters?|metres?)?(?![\d.,])/);
     const c = t.match(/\b(1[2-9]\d|2[0-2]\d)\s*cm\b/) || t.match(/\b(1[5-9]\d|20\d)\b/);
-    if (c) { cm = Number(c[1]); t = t.replace(c[0], " "); }
+    if (mt && +mt[1] * 100 + +mt[2] >= 120) { cm = +mt[1] * 100 + +mt[2]; t = t.replace(mt[0], " "); }
+    else if (c) { cm = Number(c[1]); t = t.replace(c[0], " "); }
   }
   if (cm == null || cm > 214) return null; // 7'0"+ is a joke comment
   const a = t.match(/\b(\d{1,2})\b/);
