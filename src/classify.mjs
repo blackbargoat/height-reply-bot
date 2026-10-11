@@ -42,28 +42,36 @@ export function emoji({ cm, age }) {
 }
 
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
-const EXTRA = {
-  "🟢": ["", "", " 🔥", " giant fr", " tall genes", " already built different"],
-  "🔵": ["", "", " if you lock in", " still growing", " plenty of time", " not done yet"],
-  "🔴": ["", "", " lock in now", " not over yet", " still time", " gotta lock in"],
+
+// What a real person would say back, by colour. {age} lines are only used when the comment gave an age.
+const REACT = {
+  "🟢": ["already tall fr", "nah you're built different", "giant behavior 😭", "tall genes for real", "you're good already",
+         "{age} and already that tall is crazy", "bro's already up there"],
+  "🔵": ["not done growing yet btw", "you still got time fr", "plenty of growing left", "still got potential",
+         "you're good, still room to grow", "not done yet trust", "you got years left at {age}", "{age} is still early, you're good",
+         "you're not done at {age}"],
+  "🔴": ["not over yet, gotta lock in", "still time, lock in rn", "it's not over at {age}", "lock in now, sleep + protein",
+         "still time to change it", "don't stress, just lock in", "not cooked yet, lock in"],
 };
-// Waitlist CTA, mixed up so no two replies read the same. Link lives in the bio, not the comment.
-const CTAS = [
-  "join the GoPeak waitlist, link in bio", "GoPeak waitlist is in my bio", "get on the GoPeak waitlist (bio)",
-  "see how tall you'll actually get, GoPeak waitlist in bio", "GoPeak predicts your height, waitlist in my bio",
-  "sign up for GoPeak in my bio", "waitlist for GoPeak in bio", "check the link in my bio for GoPeak",
-  "GoPeak drops soon, waitlist in bio", "find your max height on GoPeak, link in bio", "tap my bio and join GoPeak",
-  "GoPeak will show your real potential, bio", "get early access to GoPeak in my bio", "lock in with GoPeak, waitlist in bio",
-];
-const TAIL = ["", "", "", " 👆", " 📈", " 🔗", " fr", " 🙏"];
-function cta() {
-  const line = pick(CTAS);
-  return (Math.random() < 0.4 ? line[0].toUpperCase() + line.slice(1) : line) + pick(TAIL);
-}
-export function replyFor(text, username) {
+
+// Reply styles. The bot rotates them by the hour so we can see which one gets the most likes, reply-backs and signups.
+export const STYLES = {
+  nudge: ["make sure to join the waitlist in my bio", "join the gopeak waitlist in my bio", "get on the waitlist in my bio before it drops",
+          "make sure you're on the waitlist, it's in my bio", "hop on the waitlist in my bio"],
+  question: ["want to see how tall you'll actually get? waitlist in my bio", "curious what your max is? gopeak waitlist in my bio",
+             "wanna know your real potential? link in my bio", "want your actual predicted height? waitlist in bio"],
+  short: ["waitlist in bio", "link in bio 📈", "gopeak in my bio", "waitlist in my bio 🙏"],
+  personal: ["i made an app that predicts your height, waitlist is in my bio", "i'm building an app for this, waitlist in my bio",
+             "my app gopeak predicts your height, waitlist in bio", "made an app for exactly this, it's in my bio"],
+};
+
+export function replyFor(text, username, style = pick(Object.keys(STYLES))) {
   const p = parse(text);
   if (!p) return null;
   const e = emoji(p);
-  const body = `${e}${pick(EXTRA[e])}${pick([" ", " ", " · ", " | ", ". "])}${cta()}`;
-  return username ? `@${username} ${body}` : body;
+  const lines = REACT[e].filter((l) => p.age != null || !l.includes("{age}"));
+  const react = pick(lines).replace("{age}", p.age);
+  const join = pick([" btw ", ". ", ", "]);
+  const body = `${e} ${react}${react.endsWith("btw") ? " " : join}${pick(STYLES[style])}`;
+  return { message: username ? `@${username} ${body}` : body, style, emoji: e };
 }

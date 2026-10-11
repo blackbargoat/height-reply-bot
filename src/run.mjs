@@ -1,7 +1,7 @@
 // Looks at your newest posts and replies 🔵 / 🔴 / 🟢 to height comments you haven't answered yet.
 // Runs on a schedule in GitHub Actions. One token per account, from the IG_ACCESS_TOKEN, IG_ACCESS_TOKEN_2, ...
 // repo secrets, never from code.
-import { replyFor } from "./classify.mjs";
+import { replyFor, STYLES } from "./classify.mjs";
 import fs from "node:fs";
 
 const GRAPH = "https://graph.instagram.com/v23.0";
@@ -10,6 +10,14 @@ const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/
 const POSTS = 10;           // newest posts to watch
 const MAX_PER_RUN = 60;     // cap per account per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
+
+// A/B test: every reply sent in the same UTC hour uses the same style, so waitlist signups per hour can be
+// matched to a style later (see src/report.mjs). Set FORCE_STYLE to lock in a winner.
+const STYLE_IDS = Object.keys(STYLES);
+const STYLE = STYLES[process.env.FORCE_STYLE] ? process.env.FORCE_STYLE : STYLE_IDS[Math.floor(Date.now() / 3600e3) % STYLE_IDS.length];
+const LOG = "stats/replies.json";       // one row per reply the bot sent, with likes / reply-backs filled in later
+let log = []; try { log = JSON.parse(fs.readFileSync(LOG, "utf8")); } catch {}
+const CHECK_AFTER_H = 6, CHECKS_PER_RUN = 40;
 
 let TOKEN;
 async function get(path, params = {}) {
@@ -42,20 +50,24 @@ async function runAccount() {
       const byMe = replies.some((r) => r.from?.id === me.user_id || (r.from?.username ?? r.username) === me.username);
       const unknown = replies.some((r) => !(r.from?.username ?? r.username));
       if (byMe || unknown) continue; // you (or the bot) already answered it
-      const message = replyFor(c.text ?? "", who);
-      if (!message) continue;
+      const r = replyFor(c.text ?? "", who, STYLE);
+      if (!r) continue;
+      const { message } = r;
       if (DRY_RUN) { console.log("[dry run]", who, JSON.stringify(c.text), "→", message); sent++; continue; }
       const res = await fetch(`${GRAPH}/${c.id}/replies`, {
         method: "POST",
         body: new URLSearchParams({ message, access_token: TOKEN }),
       });
       console.log(who, JSON.stringify(c.text), "→", message, res.status);
-    if (!res.ok) { console.log("Instagram refused a reply, pausing this account:", await res.text()); break outer; }
+      if (!res.ok) { console.log("Instagram refused a reply, pausing this account:", await res.text()); break outer; }
+      const { id } = await res.json().catch(() => ({}));
+      if (id) log.push({ id, parent: c.id, user: who, account: me.username, style: r.style, emoji: r.emoji, at: new Date().toISOString() });
       sent++;
       await new Promise((r) => setTimeout(r, 2500 + Math.random() * 3000));
     }
   }
-  console.log(`done, ${sent} replies`);
+  console.log(`done, ${sent} replies (style: ${STYLE})`);
+  if (!DRY_RUN) await checkEngagement(me);
   // Views need the instagram_business_manage_insights permission; record null if the token doesn't have it.
   let views = null, reach = null;
   try {
@@ -66,6 +78,21 @@ async function runAccount() {
   } catch (e) { console.log(`insights @${me.username} unavailable: ${e.message}`); }
   stats.push({ me, media: media.data ?? [], sent, views, reach });
   if (sent >= MAX_PER_RUN) capped = true;
+}
+
+// Later, look back at replies a few hours old: did people like them, and did the commenter reply to us?
+async function checkEngagement(me) {
+  const due = log.filter((x) => x.account === me.username && x.likes == null && Date.now() - Date.parse(x.at) > CHECK_AFTER_H * 3600e3)
+    .slice(0, CHECKS_PER_RUN);
+  for (const x of due) {
+    try {
+      const mine = await get(x.id, { fields: "like_count" });
+      const parent = await get(x.parent, { fields: "replies{timestamp,username,from{username}}" });
+      x.likes = mine.like_count ?? 0;
+      x.replied_back = (parent.replies?.data ?? []).some((r) => (r.from?.username ?? r.username) === x.user && Date.parse(r.timestamp) > Date.parse(x.at));
+    } catch (e) { x.likes = 0; x.replied_back = false; x.gone = true; } // comment was deleted
+  }
+  if (due.length) console.log(`checked engagement on ${due.length} older replies`);
 }
 
 let failed = false, capped = false;
@@ -91,6 +118,16 @@ if (!DRY_RUN) {
   }
   fs.mkdirSync("stats", { recursive: true });
   fs.writeFileSync(file, JSON.stringify(rows.sort((a, b) => (a.day + a.account).localeCompare(b.day + b.account)), null, 1));
+  // Keep 30 days of reply rows, plus a per-style summary for the dashboard.
+  log = log.filter((x) => Date.now() - Date.parse(x.at) < 30 * 86400e3);
+  fs.writeFileSync(LOG, JSON.stringify(log));
+  const sum = {};
+  for (const x of log) {
+    const s = (sum[x.style] ??= { replies: 0, checked: 0, likes: 0, replied_back: 0 });
+    s.replies++;
+    if (x.likes != null && !x.gone) { s.checked++; s.likes += x.likes; s.replied_back += x.replied_back ? 1 : 0; }
+  }
+  fs.writeFileSync("stats/styles.json", JSON.stringify(sum, null, 1));
 }
 // Tell the workflow to start another run right away while there's still a backlog.
 if (capped && !DRY_RUN && process.env.GITHUB_OUTPUT) (await import("node:fs")).appendFileSync(process.env.GITHUB_OUTPUT, "capped=true\n");

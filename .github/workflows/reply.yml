@@ -33,7 +33,7 @@ jobs:
         if: always() && inputs.dry_run != true
         run: |
           git config user.name "height-bot"; git config user.email "height-bot@users.noreply.github.com"
-          git add stats/daily.json 2>/dev/null || exit 0
+          git add stats/ 2>/dev/null || exit 0
           git diff --cached --quiet || (git commit -qm "stats $(date -u +%F)" && git pull -q --rebase && git push -q)
       - name: Keep catching up
         if: steps.run.outputs.capped == 'true'
