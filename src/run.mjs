@@ -49,15 +49,19 @@ async function runAccount() {
         body: new URLSearchParams({ message, access_token: TOKEN }),
       });
       console.log(who, JSON.stringify(c.text), "→", message, res.status);
+    if (!res.ok) { console.log("Instagram refused a reply, pausing this account:", await res.text()); break outer; }
       sent++;
       await new Promise((r) => setTimeout(r, 2500 + Math.random() * 3000));
     }
   }
   console.log(`done, ${sent} replies`);
+  if (sent >= MAX_PER_RUN) capped = true;
 }
 
-let failed = false;
+let failed = false, capped = false;
 for (TOKEN of TOKENS) {
   try { await runAccount(); } catch (e) { console.error("account failed:", e.message); failed = true; }
 }
+// Tell the workflow to start another run right away while there's still a backlog.
+if (capped && !DRY_RUN && process.env.GITHUB_OUTPUT) (await import("node:fs")).appendFileSync(process.env.GITHUB_OUTPUT, "capped=true\n");
 if (failed) process.exit(1);

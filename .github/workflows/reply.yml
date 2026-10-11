@@ -11,6 +11,9 @@ on:
 concurrency:
   group: reply   # never two runs at once, so nobody gets replied to twice
   cancel-in-progress: false
+permissions:
+  contents: read
+  actions: write
 jobs:
   reply:
     runs-on: ubuntu-latest
@@ -19,9 +22,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: node src/run.mjs
+      - id: run
+        run: node src/run.mjs
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_ACCESS_TOKEN_2: ${{ secrets.IG_ACCESS_TOKEN_2 }}
           IG_ACCESS_TOKEN_3: ${{ secrets.IG_ACCESS_TOKEN_3 }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+      - name: Keep catching up
+        if: steps.run.outputs.capped == 'true'
+        run: sleep 90 && gh workflow run reply.yml -R ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
