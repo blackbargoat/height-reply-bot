@@ -1,22 +1,33 @@
 [
  {
+  "day": "2026-10-10",
+  "account": "mav.tallteen",
+  "replies": 50,
+  "followers": null,
+  "posts": null,
+  "likes_recent": null,
+  "comments_recent": null
+ },
+ {
   "day": "2026-10-11",
   "account": "mav.tallteen",
-  "replies": 1,
+  "replies": 59,
   "followers": 192,
   "posts": 37,
   "likes_recent": 210,
   "comments_recent": 289,
-  "updated": "2026-10-11T14:28:56.591Z"
+  "updated": "2026-10-11T14:28:56.591Z",
+  "backfilled": true
  },
  {
   "day": "2026-10-11",
   "account": "maverick.pranks",
-  "replies": 60,
+  "replies": 480,
   "followers": 57,
   "posts": 1,
   "likes_recent": 220,
   "comments_recent": 1370,
-  "updated": "2026-10-11T14:28:56.591Z"
+  "updated": "2026-10-11T14:28:56.591Z",
+  "backfilled": true
  }
 ]
