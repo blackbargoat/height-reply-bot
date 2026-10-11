@@ -2,6 +2,7 @@
 // Runs on a schedule in GitHub Actions. One token per account, from the IG_ACCESS_TOKEN, IG_ACCESS_TOKEN_2, ...
 // repo secrets, never from code.
 import { replyFor } from "./classify.mjs";
+import fs from "node:fs";
 
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/.test(k)).sort()
@@ -19,8 +20,8 @@ async function get(path, params = {}) {
 }
 
 async function runAccount() {
-  const me = await get("me", { fields: "user_id,username" });
-  const media = await get(`${me.user_id}/media`, { fields: "id,timestamp,comments_count,media_product_type", limit: POSTS });
+  const me = await get("me", { fields: "user_id,username,followers_count,media_count" });
+  const media = await get(`${me.user_id}/media`, { fields: "id,timestamp,comments_count,like_count,media_product_type", limit: POSTS });
   console.log(`account @${me.username}, watching ${media.data?.length ?? 0} posts`);
   let sent = 0;
   outer: for (const post of media.data ?? []) {
@@ -55,12 +56,31 @@ async function runAccount() {
     }
   }
   console.log(`done, ${sent} replies`);
+  stats.push({ me, media: media.data ?? [], sent });
   if (sent >= MAX_PER_RUN) capped = true;
 }
 
 let failed = false, capped = false;
+const stats = [];
 for (TOKEN of TOKENS) {
   try { await runAccount(); } catch (e) { console.error("account failed:", e.message); failed = true; }
+}
+// Daily stats for the GoPeak dashboard (stats/daily.json): one row per account per day.
+if (!DRY_RUN) {
+  const file = "stats/daily.json", day = new Date().toISOString().slice(0, 10);
+  let rows = []; try { rows = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+  for (const { me, media, sent } of stats) {
+    let row = rows.find((r) => r.day === day && r.account === me.username);
+    if (!row) rows.push((row = { day, account: me.username, replies: 0 }));
+    row.followers = me.followers_count ?? null;
+    row.posts = me.media_count ?? null;
+    row.replies += sent;
+    row.likes_recent = media.reduce((a, m) => a + (m.like_count ?? 0), 0);
+    row.comments_recent = media.reduce((a, m) => a + (m.comments_count ?? 0), 0);
+    row.updated = new Date().toISOString();
+  }
+  fs.mkdirSync("stats", { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(rows.sort((a, b) => (a.day + a.account).localeCompare(b.day + b.account)), null, 1));
 }
 // Tell the workflow to start another run right away while there's still a backlog.
 if (capped && !DRY_RUN && process.env.GITHUB_OUTPUT) (await import("node:fs")).appendFileSync(process.env.GITHUB_OUTPUT, "capped=true\n");

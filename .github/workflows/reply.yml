@@ -12,7 +12,7 @@ concurrency:
   group: reply   # never two runs at once, so nobody gets replied to twice
   cancel-in-progress: false
 permissions:
-  contents: read
+  contents: write
   actions: write
 jobs:
   reply:
@@ -29,6 +29,12 @@ jobs:
           IG_ACCESS_TOKEN_2: ${{ secrets.IG_ACCESS_TOKEN_2 }}
           IG_ACCESS_TOKEN_3: ${{ secrets.IG_ACCESS_TOKEN_3 }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+      - name: Save daily stats
+        if: always() && inputs.dry_run != true
+        run: |
+          git config user.name "height-bot"; git config user.email "height-bot@users.noreply.github.com"
+          git add stats/daily.json 2>/dev/null || exit 0
+          git diff --cached --quiet || (git commit -qm "stats $(date -u +%F)" && git pull -q --rebase && git push -q)
       - name: Keep catching up
         if: steps.run.outputs.capped == 'true'
         run: sleep 90 && gh workflow run reply.yml -R ${{ github.repository }}
