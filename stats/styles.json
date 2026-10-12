@@ -1,4 +1,10 @@
 {
+ "personal": {
+  "replies": 703,
+  "checked": 573,
+  "likes": 78,
+  "replied_back": 0
+ },
  "short": {
   "replies": 574,
   "checked": 355,
@@ -7,7 +13,7 @@
  },
  "question": {
   "replies": 690,
-  "checked": 563,
+  "checked": 601,
   "likes": 61,
   "replied_back": 0
  },
@@ -15,12 +21,6 @@
   "replies": 554,
   "checked": 414,
   "likes": 44,
-  "replied_back": 0
- },
- "personal": {
-  "replies": 697,
-  "checked": 573,
-  "likes": 78,
   "replied_back": 0
  }
 }
