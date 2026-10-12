@@ -7,7 +7,8 @@ import fs from "node:fs";
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/.test(k)).sort()
   .map((k) => process.env[k]).filter(Boolean);
-const POSTS = 3;            // newest posts to watch (new uploads get picked up automatically)
+const POSTS = Number(process.env.POSTS) || 1;  // newest posts to watch; 1 = all attention on the latest reel
+const LOOP_MIN = Number(process.env.LOOP_MIN) || 0; // keep re-checking for this many minutes instead of one pass
 const MAX_PER_RUN = 60;     // cap per account per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
 
@@ -68,7 +69,7 @@ async function runAccount() {
         body: new URLSearchParams({ message, access_token: TOKEN }),
       });
       console.log(who, JSON.stringify(c.text), "→", message, res.status);
-      if (!res.ok) { console.log("Instagram refused a reply, pausing this account:", await res.text()); break outer; }
+      if (!res.ok) { console.log("Instagram refused a reply, pausing this account:", await res.text()); paused.add(TOKEN); break outer; }
       const { id } = await res.json().catch(() => ({}));
       mentioned.add(who.toLowerCase());
       if (id) log.push({ id, parent: c.id, user: who, account: me.username, style: r.style, emoji: r.emoji, at: new Date().toISOString() });
@@ -106,10 +107,18 @@ async function checkEngagement(me) {
 }
 
 let failed = false, capped = false;
-const stats = [];
-for (TOKEN of TOKENS) {
-  try { await runAccount(); } catch (e) { console.error("account failed:", e.message); failed = true; }
-}
+const stats = [], paused = new Set();
+// One pass over every account; with LOOP_MIN set, keep passing so fresh comments get answered within a minute.
+const until = Date.now() + LOOP_MIN * 60e3;
+do {
+  const before = stats.reduce((a, x) => a + x.sent, 0);
+  for (TOKEN of TOKENS) {
+    if (paused.has(TOKEN)) continue;
+    try { await runAccount(); } catch (e) { console.error("account failed:", e.message); failed = true; }
+  }
+  if (DRY_RUN) break;
+  if (stats.reduce((a, x) => a + x.sent, 0) === before) await new Promise((r) => setTimeout(r, 30e3));
+} while (Date.now() < until && paused.size < TOKENS.length);
 // Daily stats for the GoPeak dashboard (stats/daily.json): one row per account per day.
 if (!DRY_RUN) {
   const file = "stats/daily.json", day = new Date().toISOString().slice(0, 10);

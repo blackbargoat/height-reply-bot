@@ -32,7 +32,7 @@ export function parse(text) {
     else if (c) { cm = Number(c[1]); t = t.replace(c[0], " "); }
   }
   if (cm == null || cm > 214) return null; // 7'0"+ is a joke comment
-  const a = t.match(/\b(\d{1,2})\b/);
+  const a = t.match(/(?<!\d)(\d{1,2})(?!\d)/);           // also "15years", "14yo"
   const age = a && Number(a[1]) >= 8 && Number(a[1]) <= 30 ? Number(a[1]) : null;
   return { cm, age };
 }
@@ -70,7 +70,16 @@ export const STYLES = {
 
 export function replyFor(text, username, style = pick(Object.keys(STYLES))) {
   const p = parse(text);
-  if (!p) return null;
+  if (!p) {
+    // Only an age ("14 years 🔴"): ask for the height so they come back, plus the CTA.
+    const t = text.toLowerCase();
+    const a = t.match(/(?<!\d)(\d{1,2})\s*(?:y\/?o|yrs?|years?|yr old)|\bage\s*(\d{1,2})(?!\d)/);
+    const age = a && Number(a[1] ?? a[2]);
+    if (!age || age < 8 || age > 30 || t.includes("?")) return null;
+    const ask = pick(["drop your height too 👀", "how tall tho?", "what's your height tho", "need the height too 😭"]);
+    const body = `${ask} ${pick(STYLES[style])}`;
+    return { message: username ? `@${username} ${body}` : body, style, emoji: "❔" };
+  }
   const e = emoji(p);
   const lines = REACT[e].filter((l) => p.age != null || !l.includes("{age}"));
   const react = pick(lines).replace("{age}", p.age);
