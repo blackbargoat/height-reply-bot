@@ -33,5 +33,25 @@
   "backfilled": true,
   "views": 38672,
   "reach": 20936
+ },
+ {
+  "day": "2026-10-12",
+  "account": "mav.tallteen",
+  "replies": 0,
+  "followers": 192,
+  "posts": 38,
+  "likes_recent": 43,
+  "comments_recent": 142,
+  "updated": "2026-10-12T00:10:57.100Z"
+ },
+ {
+  "day": "2026-10-12",
+  "account": "maverick.pranks",
+  "replies": 1,
+  "followers": 73,
+  "posts": 2,
+  "likes_recent": 364,
+  "comments_recent": 2539,
+  "updated": "2026-10-12T00:10:57.100Z"
  }
 ]
