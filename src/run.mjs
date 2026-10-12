@@ -121,6 +121,13 @@ do {
 } while (Date.now() < until && paused.size < TOKENS.length);
 // Daily stats for the GoPeak dashboard (stats/daily.json): one row per account per day.
 if (!DRY_RUN) {
+  // Runs last 20 min, so another run may have pushed stats meanwhile: pull first, then merge our replies into theirs.
+  if (process.env.GITHUB_ACTIONS) {
+    try { (await import("node:child_process")).execSync("git pull -q --rebase", { stdio: "inherit" }); } catch (e) { console.log("stats pull failed:", e.message); }
+    let theirs = []; try { theirs = JSON.parse(fs.readFileSync(LOG, "utf8")); } catch {}
+    const mine = new Set(log.map((x) => x.id));
+    log = [...theirs.filter((x) => !mine.has(x.id)), ...log];
+  }
   const file = "stats/daily.json", day = new Date().toISOString().slice(0, 10);
   let rows = []; try { rows = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
   for (const { me, media, sent, views, reach } of stats) {
