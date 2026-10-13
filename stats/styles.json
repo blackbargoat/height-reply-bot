@@ -1,20 +1,20 @@
 {
+ "personal": {
+  "replies": 722,
+  "checked": 654,
+  "likes": 83,
+  "replied_back": 0
+ },
  "question": {
   "replies": 713,
-  "checked": 650,
-  "likes": 66,
+  "checked": 662,
+  "likes": 68,
   "replied_back": 0
  },
  "nudge": {
   "replies": 576,
   "checked": 541,
   "likes": 56,
-  "replied_back": 0
- },
- "personal": {
-  "replies": 712,
-  "checked": 654,
-  "likes": 83,
   "replied_back": 0
  },
  "short": {
