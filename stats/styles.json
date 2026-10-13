@@ -1,14 +1,14 @@
 {
- "personal": {
-  "replies": 1073,
-  "checked": 782,
-  "likes": 94,
-  "replied_back": 0
- },
  "question": {
-  "replies": 997,
+  "replies": 1023,
   "checked": 760,
   "likes": 78,
+  "replied_back": 0
+ },
+ "personal": {
+  "replies": 1073,
+  "checked": 802,
+  "likes": 95,
   "replied_back": 0
  },
  "nudge": {
