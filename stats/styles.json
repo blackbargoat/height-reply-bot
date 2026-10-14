@@ -1,8 +1,8 @@
 {
  "question": {
   "replies": 1046,
-  "checked": 889,
-  "likes": 96,
+  "checked": 909,
+  "likes": 97,
   "replied_back": 0
  },
  "personal": {
@@ -12,15 +12,15 @@
   "replied_back": 0
  },
  "nudge": {
-  "replies": 960,
+  "replies": 981,
   "checked": 735,
   "likes": 72,
   "replied_back": 0
  },
  "short": {
   "replies": 824,
-  "checked": 669,
-  "likes": 73,
+  "checked": 719,
+  "likes": 83,
   "replied_back": 0
  }
 }
