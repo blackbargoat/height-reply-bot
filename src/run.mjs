@@ -7,7 +7,7 @@ import fs from "node:fs";
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/.test(k)).sort()
   .map((k) => process.env[k]).filter(Boolean);
-const POSTS = Number(process.env.POSTS) || 1;  // newest posts to watch; 1 = all attention on the latest reel
+const POSTS = Number(process.env.POSTS) || 2;  // newest posts to watch (newest first), so the last viral reel keeps getting replies too
 const LOOP_MIN = Number(process.env.LOOP_MIN) || 0; // keep re-checking for this many minutes instead of one pass
 const MAX_PER_RUN = 60;     // cap per account per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
