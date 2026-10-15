@@ -29,6 +29,7 @@ jobs:
           IG_ACCESS_TOKEN_2: ${{ secrets.IG_ACCESS_TOKEN_2 }}
           IG_ACCESS_TOKEN_3: ${{ secrets.IG_ACCESS_TOKEN_3 }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          ONLY_ACCOUNTS: maverick.pranks   # clear to reply on every connected account again
           LOOP_MIN: 20   # stay on for 20 min; the next scheduled run picks up right after
       - name: Save daily stats
         if: always() && inputs.dry_run != true

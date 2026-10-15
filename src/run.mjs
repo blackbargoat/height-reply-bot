@@ -7,7 +7,8 @@ import fs from "node:fs";
 const GRAPH = "https://graph.instagram.com/v23.0";
 const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/.test(k)).sort()
   .map((k) => process.env[k]).filter(Boolean);
-const POSTS = Number(process.env.POSTS) || 2;  // newest posts to watch (newest first), so the last viral reel keeps getting replies too
+const POSTS = Number(process.env.POSTS) || 3;  // newest posts to watch (newest first)
+const ONLY = (process.env.ONLY_ACCOUNTS || "").split(",").map((x) => x.trim()).filter(Boolean); // e.g. "maverick.pranks"
 const LOOP_MIN = Number(process.env.LOOP_MIN) || 0; // keep re-checking for this many minutes instead of one pass
 const MAX_PER_RUN = 60;     // cap per account per run so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
@@ -30,6 +31,7 @@ async function get(path, params = {}) {
 
 async function runAccount() {
   const me = await get("me", { fields: "user_id,username,followers_count,media_count" });
+  if (ONLY.length && !ONLY.includes(me.username)) { console.log(`skipping @${me.username} (ONLY_ACCOUNTS)`); return; }
   const media = await get(`${me.user_id}/media`, { fields: "id,timestamp,comments_count,like_count,media_product_type", limit: POSTS });
   console.log(`account @${me.username}, watching ${media.data?.length ?? 0} posts`);
   let sent = 0;
@@ -37,7 +39,7 @@ async function runAccount() {
     // Page through all comments (newest posts can have hundreds).
     const comments = { data: [] };
     let page = await get(`${post.id}/comments`, { fields: "id,text,username,from{id,username},replies{id,text,from{id,username},username}", limit: 50 });
-    for (let i = 0; i < 60 && page; i++) {
+    for (let i = 0; i < 400 && page; i++) { // the API lists oldest first, so read every page to reach new comments
       comments.data.push(...(page.data ?? []));
       page = page.paging?.next ? await (await fetch(page.paging.next)).json() : null;
     }
