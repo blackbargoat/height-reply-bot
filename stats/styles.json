@@ -1,14 +1,14 @@
 {
- "short": {
-  "replies": 1483,
-  "checked": 1425,
-  "likes": 160,
-  "replied_back": 0
- },
  "personal": {
-  "replies": 1903,
+  "replies": 1906,
   "checked": 1827,
   "likes": 218,
+  "replied_back": 0
+ },
+ "short": {
+  "replies": 1483,
+  "checked": 1433,
+  "likes": 160,
   "replied_back": 0
  },
  "question": {
