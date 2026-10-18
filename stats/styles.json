@@ -1,6 +1,12 @@
 {
+ "personal": {
+  "replies": 1991,
+  "checked": 1900,
+  "likes": 220,
+  "replied_back": 0
+ },
  "nudge": {
-  "replies": 1517,
+  "replies": 1528,
   "checked": 1461,
   "likes": 131,
   "replied_back": 0
@@ -11,16 +17,10 @@
   "likes": 182,
   "replied_back": 0
  },
- "personal": {
-  "replies": 1991,
-  "checked": 1900,
-  "likes": 220,
-  "replied_back": 0
- },
  "short": {
   "replies": 1546,
-  "checked": 1492,
-  "likes": 168,
+  "checked": 1497,
+  "likes": 170,
   "replied_back": 0
  }
 }
