@@ -37,25 +37,28 @@ def iso(ts):
 
 posts = []
 for c in call("sync/handles", {}):
-    if c.get("tiktok"):
-        es = listing(f"https://www.tiktok.com/@{c['tiktok']}")
-        print(f"tiktok @{c['tiktok']}: {len(es)}")
-        for e in es:
-            posts.append({"creator_id": c["id"], "platform": "tiktok", "external_id": str(e["id"]),
-                          "url": e.get("url") or f"https://www.tiktok.com/@{c['tiktok']}/video/{e['id']}",
-                          "posted_at": iso(e.get("timestamp")), "caption": e.get("title"),
-                          "views": e.get("view_count"), "likes": e.get("like_count"), "comments": e.get("comment_count")})
-    if c.get("youtube"):
-        seen = set()
-        for tab in ("shorts", "videos"):
-            es = listing(f"https://www.youtube.com/@{c['youtube']}/{tab}")
-            print(f"youtube @{c['youtube']} {tab}: {len(es)}")
+    for acc in c.get("accounts", []):
+        h, plat = acc["handle"], acc["platform"]
+        if plat == "tiktok":
+            es = listing(f"https://www.tiktok.com/@{h}")
+            print(f"tiktok @{h}: {len(es)}")
             for e in es:
-                if e["id"] in seen:
-                    continue
-                seen.add(e["id"])
-                posts.append({"creator_id": c["id"], "platform": "youtube", "external_id": str(e["id"]),
-                              "url": f"https://www.youtube.com/shorts/{e['id']}" if tab == "shorts" else f"https://www.youtube.com/watch?v={e['id']}",
-                              "posted_at": iso(e.get("timestamp")), "caption": e.get("title"), "views": e.get("view_count")})
+                posts.append({"creator_id": c["id"], "platform": "tiktok", "external_id": str(e["id"]),
+                              "url": e.get("url") or f"https://www.tiktok.com/@{h}/video/{e['id']}",
+                              "posted_at": iso(e.get("timestamp")), "caption": e.get("title"),
+                              "views": e.get("view_count"), "likes": e.get("like_count"), "comments": e.get("comment_count")})
+        elif plat == "youtube":
+            seen = set()
+            for tab in ("shorts", "videos"):
+                es = listing(f"https://www.youtube.com/@{h}/{tab}")
+                print(f"youtube @{h} {tab}: {len(es)}")
+                for e in es:
+                    if e["id"] in seen:
+                        continue
+                    seen.add(e["id"])
+                    posts.append({"creator_id": c["id"], "platform": "youtube", "external_id": str(e["id"]),
+                                  "url": f"https://www.youtube.com/shorts/{e['id']}" if tab == "shorts" else f"https://www.youtube.com/watch?v={e['id']}",
+                                  "posted_at": iso(e.get("timestamp")), "caption": e.get("title"), "views": e.get("view_count")})
+        # instagram: needs a login to list posts, counted when the creator pastes the link
 
 print(call("sync/posts", {"posts": posts}))
