@@ -31,7 +31,9 @@ async function get(path, params = {}) {
 
 async function runAccount() {
   const me = await get("me", { fields: "user_id,username,followers_count,media_count" });
-  if (ONLY.length && !ONLY.includes(me.username)) { console.log(`skipping @${me.username} (ONLY_ACCOUNTS)`); return; }
+  // ONLY_ACCOUNTS pauses replies only; stats and per-post numbers are still collected for every account.
+  if (!postsDone.has(me.username)) { postsDone.add(me.username); await collectPosts(me).catch((e) => console.log(`posts @${me.username} failed: ${e.message}`)); }
+  if (ONLY.length && !ONLY.includes(me.username)) { console.log(`replies paused on @${me.username} (ONLY_ACCOUNTS)`); await accountStats(me, []); return; }
   const media = await get(`${me.user_id}/media`, { fields: "id,timestamp,comments_count,like_count,media_product_type", limit: POSTS });
   console.log(`account @${me.username}, watching ${media.data?.length ?? 0} posts`);
   let sent = 0;
@@ -81,6 +83,12 @@ async function runAccount() {
   }
   console.log(`done, ${sent} replies (style: ${STYLE})`);
   if (!DRY_RUN) await checkEngagement(me);
+  await accountStats(me, media.data ?? [], sent);
+  if (sent >= MAX_PER_RUN) capped = true;
+}
+
+async function accountStats(me, media, sent = 0) {
+  if (stats.some((x) => x.me.username === me.username)) { stats.find((x) => x.me.username === me.username).sent += sent; return; }
   // Views need the instagram_business_manage_insights permission; record null if the token doesn't have it.
   let views = null, reach = null;
   try {
@@ -89,8 +97,41 @@ async function runAccount() {
     for (const m of ins.data ?? []) { if (m.name === "views") views = m.total_value?.value ?? null; if (m.name === "reach") reach = m.total_value?.value ?? null; }
     console.log(`insights @${me.username}: views today ${views}, reach ${reach}`);
   } catch (e) { console.log(`insights @${me.username} unavailable: ${e.message}`); }
-  stats.push({ me, media: media.data ?? [], sent, views, reach });
-  if (sent >= MAX_PER_RUN) capped = true;
+  stats.push({ me, media, sent, views, reach });
+}
+
+// Per-post numbers for the GoPeak HQ dashboard (stats/posts.json): latest totals plus one snapshot per day,
+// so the dashboard can see how fast each video gains views and line that up with waitlist signups.
+// Thumbnails of the account's own posts are saved once to stats/thumbs (Instagram's URLs expire).
+const POSTS_FILE = "stats/posts.json";
+async function collectPosts(me) {
+  let all = {}; try { all = JSON.parse(fs.readFileSync(POSTS_FILE, "utf8")); } catch {}
+  // Every 2 hours is plenty and keeps Instagram API calls low (the comment checks already use a lot)
+  const last = Math.max(0, ...Object.values(all).filter((p) => p.account === me.username).map((p) => Date.parse(p.updated) || 0));
+  if (Date.now() - last < 2 * 3600e3 && !process.env.FORCE_POSTS) { console.log(`posts @${me.username}: fresh, skipped`); return; }
+  const media = await get(`${me.user_id}/media`, { fields: "id,timestamp,permalink,media_type,media_product_type,like_count,comments_count,caption,thumbnail_url,media_url", limit: 25 });
+  const day = new Date().toISOString().slice(0, 10);
+  for (const m of media.data ?? []) {
+    let ins = {};
+    try {
+      const metrics = m.media_product_type === "REELS" ? "views,reach,shares,saved,total_interactions" : "views,reach,shares,saved";
+      for (const x of (await get(`${m.id}/insights`, { metric: metrics })).data ?? []) ins[x.name] = x.values?.[0]?.value ?? x.total_value?.value ?? null;
+    } catch (e) { /* insights permission missing or post too new */ }
+    const p = (all[m.id] ??= { id: m.id, account: me.username, daily: {} });
+    Object.assign(p, {
+      account: me.username, timestamp: m.timestamp, permalink: m.permalink, type: m.media_product_type ?? m.media_type,
+      caption: (m.caption ?? "").slice(0, 140), likes: m.like_count ?? 0, comments: m.comments_count ?? 0,
+      views: ins.views ?? p.views ?? null, reach: ins.reach ?? p.reach ?? null, shares: ins.shares ?? p.shares ?? null,
+      saves: ins.saved ?? p.saves ?? null, updated: new Date().toISOString(),
+    });
+    p.daily[day] = { views: p.views, likes: p.likes, comments: p.comments, shares: p.shares, saves: p.saves };
+    const thumb = `stats/thumbs/${m.id}.jpg`, src = m.thumbnail_url ?? (m.media_type === "IMAGE" || m.media_type === "CAROUSEL_ALBUM" ? m.media_url : null);
+    if (src && !fs.existsSync(thumb)) {
+      try { const r = await fetch(src); if (r.ok) { fs.mkdirSync("stats/thumbs", { recursive: true }); fs.writeFileSync(thumb, Buffer.from(await r.arrayBuffer())); p.thumb = thumb; } } catch {}
+    } else if (fs.existsSync(thumb)) p.thumb = thumb;
+  }
+  postsByAccount[me.username] = all;
+  console.log(`posts @${me.username}: ${media.data?.length ?? 0} updated`);
 }
 
 // Later, look back at replies a few hours old: did people like them, and did the commenter reply to us?
@@ -109,7 +150,7 @@ async function checkEngagement(me) {
 }
 
 let failed = false, capped = false;
-const stats = [], paused = new Set();
+const stats = [], paused = new Set(), postsDone = new Set(), postsByAccount = {};
 // One pass over every account; with LOOP_MIN set, keep passing so fresh comments get answered within a minute.
 const until = Date.now() + LOOP_MIN * 60e3;
 do {
@@ -145,6 +186,11 @@ if (!DRY_RUN) {
     row.updated = new Date().toISOString();
   }
   fs.mkdirSync("stats", { recursive: true });
+  if (Object.keys(postsByAccount).length) {
+    let posts = {}; try { posts = JSON.parse(fs.readFileSync(POSTS_FILE, "utf8")); } catch {}
+    for (const acc of Object.values(postsByAccount)) for (const [id, p] of Object.entries(acc)) if (p.account && (posts[id] == null || p.updated)) posts[id] = { ...(posts[id] ?? {}), ...p, daily: { ...(posts[id]?.daily ?? {}), ...p.daily } };
+    fs.writeFileSync(POSTS_FILE, JSON.stringify(posts));
+  }
   fs.writeFileSync(file, JSON.stringify(rows.sort((a, b) => (a.day + a.account).localeCompare(b.day + b.account)), null, 1));
   // Keep 30 days of reply rows, plus a per-style summary for the dashboard.
   log = log.filter((x) => Date.now() - Date.parse(x.at) < 30 * 86400e3);
