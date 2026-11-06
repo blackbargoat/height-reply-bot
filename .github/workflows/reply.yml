@@ -29,14 +29,17 @@ jobs:
           IG_ACCESS_TOKEN_2: ${{ secrets.IG_ACCESS_TOKEN_2 }}
           IG_ACCESS_TOKEN_3: ${{ secrets.IG_ACCESS_TOKEN_3 }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
-          ONLY_ACCOUNTS: maverick.pranks   # clear to reply on every connected account again
+          ONLY_ACCOUNTS: ""   # empty = reply on every connected account; set e.g. "maverick.pranks" to pause the others
           LOOP_MIN: 20   # stay on for 20 min; the next scheduled run picks up right after
       - name: Save daily stats
         if: always() && inputs.dry_run != true
         run: |
           git config user.name "height-bot"; git config user.email "height-bot@users.noreply.github.com"
           git add stats/ 2>/dev/null || exit 0
-          git diff --cached --quiet || (git commit -qm "stats $(date -u +%F)" && git pull -q --rebase && git push -q)
+          git diff --cached --quiet && exit 0
+          git commit -qm "stats $(date -u +%F)"
+          # another job (creator detector, a manual push) may have pushed meanwhile: rebase and retry
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && exit 0; sleep $((i * 5)); done; exit 1
       - name: Keep catching up
         if: steps.run.outputs.capped == 'true'
         run: sleep 90 && gh workflow run reply.yml -R ${{ github.repository }}
