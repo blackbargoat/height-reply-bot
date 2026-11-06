@@ -10,9 +10,25 @@ const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/
 const POSTS = Number(process.env.POSTS) || 3;  // newest posts to watch (newest first)
 const ONLY = (process.env.ONLY_ACCOUNTS || "").split(",").map((x) => x.trim()).filter(Boolean); // e.g. "maverick.pranks"
 const LOOP_MIN = Number(process.env.LOOP_MIN) || 0; // keep re-checking for this many minutes instead of one pass
-const MAX_PER_RUN = Number(process.env.MAX_PER_RUN) || 60; // cap per account per pass so Instagram doesn't see a huge burst
+let MAX_PER_RUN = Number(process.env.MAX_PER_RUN) || 60; // cap per account per pass so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
-const GAP_MS = Number(process.env.GAP_MS) || 2500; // pause between replies (random up to 2.2x)
+let GAP_MS = Number(process.env.GAP_MS) || 2500; // pause between replies (random up to 2.2x)
+// HQ bot control: mode comes from Supabase (bot_config), changed from hq.getgopeak.com. auto = max speed while there's a
+// backlog, normal pace once caught up. Falls back to the env pace if Supabase can't be reached.
+const SB = "https://etdbjahwegsmuelcawgf.supabase.co/rest/v1/rpc/bot_config", SB_KEY = "sb_publishable_p8exB2dS5lpdz-p1chueJA_n9zRQdnG";
+const PACE = { max: { gap: 1000, cap: 120 }, normal: { gap: 2500, cap: 60 } };
+let CONFIG = { mode: "auto", paused_accounts: [] }, MODE = "normal";
+const backlog = {}; // account -> unanswered height comments left after the last pass
+async function loadConfig() {
+  try {
+    const r = await fetch(SB, { method: "POST", headers: { apikey: SB_KEY, "content-type": "application/json" }, body: "{}" });
+    if (r.ok) CONFIG = { ...CONFIG, ...(await r.json()) };
+  } catch {}
+  const waiting = Object.values(backlog).reduce((a, b) => a + b, 0);
+  MODE = CONFIG.mode === "auto" ? (waiting > 20 || !Object.keys(backlog).length ? "max" : "normal") : CONFIG.mode;
+  if (PACE[MODE]) { GAP_MS = PACE[MODE].gap; MAX_PER_RUN = PACE[MODE].cap; }
+}
+const incoming = {}; // account -> { commentId: hourISO } for comments from the last 48 h
 
 // A/B test: every reply sent in the same UTC hour uses the same style, so waitlist signups per hour can be
 // matched to a style later (see src/report.mjs). Set FORCE_STYLE to lock in a winner.
@@ -34,14 +50,14 @@ async function runAccount() {
   const me = await get("me", { fields: "user_id,username,followers_count,media_count" });
   // ONLY_ACCOUNTS pauses replies only; stats and per-post numbers are still collected for every account.
   if (!postsDone.has(me.username)) { postsDone.add(me.username); await collectPosts(me).catch((e) => console.log(`posts @${me.username} failed: ${e.message}`)); }
-  if (ONLY.length && !ONLY.includes(me.username)) { console.log(`replies paused on @${me.username} (ONLY_ACCOUNTS)`); await accountStats(me, []); return; }
+  if (MODE === "paused" || (CONFIG.paused_accounts || []).includes(me.username) || (ONLY.length && !ONLY.includes(me.username))) { console.log(`replies paused on @${me.username} (ONLY_ACCOUNTS)`); await accountStats(me, []); return; }
   const media = await get(`${me.user_id}/media`, { fields: "id,timestamp,comments_count,like_count,media_product_type", limit: POSTS });
   console.log(`account @${me.username}, watching ${media.data?.length ?? 0} posts`);
-  let sent = 0;
+  let sent = 0, waiting = 0;
   outer: for (const post of media.data ?? []) {
     // Page through all comments (newest posts can have hundreds).
     const comments = { data: [] };
-    let page = await get(`${post.id}/comments`, { fields: "id,text,username,from{id,username},replies{id,text,from{id,username},username}", limit: 50 });
+    let page = await get(`${post.id}/comments`, { fields: "id,text,timestamp,username,from{id,username},replies{id,text,from{id,username},username}", limit: 50 });
     for (let i = 0; i < 400 && page; i++) { // the API lists oldest first, so read every page to reach new comments
       comments.data.push(...(page.data ?? []));
       page = page.paging?.next ? await (await fetch(page.paging.next)).json() : null;
@@ -56,8 +72,11 @@ async function runAccount() {
       const mine = [c, ...(c.replies?.data ?? [])].filter((x) => x.from?.id === me.user_id || (x.from?.username ?? x.username) === me.username);
       for (const m of mine) { const at = (m.text ?? "").match(/^@([\w.]+)/); if (at) mentioned.add(at[1].toLowerCase()); }
     }
+    const inc = (incoming[me.username] ??= {});
     for (const c of comments.data ?? []) {
-      if (sent >= MAX_PER_RUN) break outer;
+      if (c.timestamp && Date.now() - Date.parse(c.timestamp) < 48 * 3600e3) inc[c.id] = new Date(c.timestamp).toISOString().slice(0, 13) + ":00:00Z";
+    }
+    for (const c of comments.data ?? []) {
       if (answered.has(c.id) || mentioned.has((c.from?.username ?? c.username ?? "").toLowerCase())) continue;
       const who = c.from?.username ?? c.username;
       if (who === me.username || c.from?.id === me.user_id) continue;
@@ -67,6 +86,7 @@ async function runAccount() {
       if (byMe || unknown) continue; // you (or the bot) already answered it
       const r = replyFor(c.text ?? "", who, STYLE);
       if (!r) continue;
+      if (sent >= MAX_PER_RUN) { waiting++; continue; } // over this pass's cap: count it as backlog
       const { message } = r;
       if (DRY_RUN) { console.log("[dry run]", who, JSON.stringify(c.text), "→", message); sent++; continue; }
       const res = await fetch(`${GRAPH}/${c.id}/replies`, {
@@ -82,10 +102,11 @@ async function runAccount() {
       await new Promise((r) => setTimeout(r, GAP_MS + Math.random() * GAP_MS * 1.2));
     }
   }
-  console.log(`done, ${sent} replies (style: ${STYLE})`);
+  backlog[me.username] = waiting;
+  console.log(`done, ${sent} replies, ${waiting} waiting (style: ${STYLE}, mode ${MODE}, gap ${GAP_MS}ms, cap ${MAX_PER_RUN})`);
   if (!DRY_RUN) await checkEngagement(me);
   await accountStats(me, media.data ?? [], sent);
-  if (sent >= MAX_PER_RUN) capped = true;
+  if (sent >= MAX_PER_RUN || waiting) capped = true;
 }
 
 async function accountStats(me, media, sent = 0) {
@@ -156,6 +177,7 @@ const stats = [], paused = new Set(), postsDone = new Set(), postsByAccount = {}
 const until = Date.now() + LOOP_MIN * 60e3;
 do {
   const before = stats.reduce((a, x) => a + x.sent, 0);
+  await loadConfig();
   for (TOKEN of TOKENS) {
     if (paused.has(TOKEN)) continue;
     try { await runAccount(); } catch (e) { console.error("account failed:", e.message); failed = true; }
@@ -203,6 +225,19 @@ if (!DRY_RUN) {
     if (x.likes != null && !x.gone) { s.checked++; s.likes += x.likes; s.replied_back += x.replied_back ? 1 : 0; }
   }
   fs.writeFileSync("stats/styles.json", JSON.stringify(sum, null, 1));
+  // Hourly comments in / replies out for the HQ bot panel (last 48 h), plus the bot's current mode and backlog.
+  let hourly = {}; try { hourly = JSON.parse(fs.readFileSync("stats/hourly.json", "utf8")); } catch {}
+  const cutoff = new Date(Date.now() - 48 * 3600e3).toISOString().slice(0, 13);
+  for (const [acc, ids] of Object.entries(incoming)) {
+    const counts = {};
+    for (const h of Object.values(ids)) counts[h] = (counts[h] || 0) + 1;
+    for (const [h, n] of Object.entries(counts)) { const row = ((hourly[acc] ??= {})[h] ??= {}); row.comments = Math.max(row.comments || 0, n); }
+  }
+  for (const x of log) { if (x.at.slice(0, 13) < cutoff) continue; const h = x.at.slice(0, 13) + ":00:00Z"; ((hourly[x.account] ??= {})[h] ??= {}).replies = 0; }
+  for (const x of log) { if (x.at.slice(0, 13) < cutoff) continue; const h = x.at.slice(0, 13) + ":00:00Z"; hourly[x.account][h].replies++; }
+  for (const acc of Object.keys(hourly)) for (const h of Object.keys(hourly[acc])) if (h.slice(0, 13) < cutoff) delete hourly[acc][h];
+  fs.writeFileSync("stats/hourly.json", JSON.stringify(hourly));
+  fs.writeFileSync("stats/bot.json", JSON.stringify({ updated: new Date().toISOString(), mode: MODE, setting: CONFIG.mode, paused_accounts: CONFIG.paused_accounts, backlog, gap_ms: GAP_MS, cap: MAX_PER_RUN }, null, 1));
 }
 // Tell the workflow to start another run right away while there's still a backlog.
 if (capped && !DRY_RUN && process.env.GITHUB_OUTPUT) (await import("node:fs")).appendFileSync(process.env.GITHUB_OUTPUT, "capped=true\n");
