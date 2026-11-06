@@ -384,12 +384,22 @@
  },
  {
   "day": "2026-11-06",
+  "account": "mav.tallteen",
+  "replies": 8,
+  "followers": 190,
+  "posts": 41,
+  "likes_recent": 31,
+  "comments_recent": 49,
+  "updated": "2026-11-06T03:10:38.935Z"
+ },
+ {
+  "day": "2026-11-06",
   "account": "maverick.pranks",
   "replies": 0,
   "followers": 351,
   "posts": 5,
   "likes_recent": 47,
   "comments_recent": 230,
-  "updated": "2026-11-06T02:01:23.941Z"
+  "updated": "2026-11-06T03:10:38.935Z"
  }
 ]
