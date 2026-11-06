@@ -10,8 +10,9 @@ const TOKENS = Object.keys(process.env).filter((k) => /^IG_ACCESS_TOKEN(_\d+)?$/
 const POSTS = Number(process.env.POSTS) || 3;  // newest posts to watch (newest first)
 const ONLY = (process.env.ONLY_ACCOUNTS || "").split(",").map((x) => x.trim()).filter(Boolean); // e.g. "maverick.pranks"
 const LOOP_MIN = Number(process.env.LOOP_MIN) || 0; // keep re-checking for this many minutes instead of one pass
-const MAX_PER_RUN = 60;     // cap per account per run so Instagram doesn't see a huge burst
+const MAX_PER_RUN = Number(process.env.MAX_PER_RUN) || 60; // cap per account per pass so Instagram doesn't see a huge burst
 const DRY_RUN = process.env.DRY_RUN === "1";
+const GAP_MS = Number(process.env.GAP_MS) || 2500; // pause between replies (random up to 2.2x)
 
 // A/B test: every reply sent in the same UTC hour uses the same style, so waitlist signups per hour can be
 // matched to a style later (see src/report.mjs). Set FORCE_STYLE to lock in a winner.
@@ -78,7 +79,7 @@ async function runAccount() {
       mentioned.add(who.toLowerCase());
       if (id) log.push({ id, parent: c.id, user: who, account: me.username, style: r.style, emoji: r.emoji, at: new Date().toISOString() });
       sent++;
-      await new Promise((r) => setTimeout(r, 2500 + Math.random() * 3000));
+      await new Promise((r) => setTimeout(r, GAP_MS + Math.random() * GAP_MS * 1.2));
     }
   }
   console.log(`done, ${sent} replies (style: ${STYLE})`);
