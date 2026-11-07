@@ -59,13 +59,13 @@ const REACT = {
 
 // Reply styles. The bot rotates them by the hour so we can see which one gets the most likes, reply-backs and signups.
 export const STYLES = {
-  nudge: ["make sure to join the waitlist in my bio", "join the gopeak waitlist in my bio", "get on the waitlist in my bio before it drops",
-          "make sure you're on the waitlist, it's in my bio", "hop on the waitlist in my bio"],
-  question: ["want to see how tall you'll actually get? waitlist in my bio", "curious what your max is? gopeak waitlist in my bio",
-             "wanna know your real potential? link in my bio", "want your actual predicted height? waitlist in bio"],
-  short: ["waitlist in bio", "link in bio 📈", "gopeak in my bio", "waitlist in my bio 🙏"],
-  personal: ["i made an app that predicts your height, waitlist is in my bio", "i'm building an app for this, waitlist in my bio",
-             "my app gopeak predicts your height, waitlist in bio", "made an app for exactly this, it's in my bio"],
+  nudge: ["gopeak is out now, app's in my bio", "download gopeak in my bio and check your real prediction", "the app's live, it's in my bio",
+          "get gopeak, link in my bio", "go try gopeak, it's in my bio"],
+  question: ["want to see how tall you'll actually get? app in my bio", "curious what your max is? gopeak is in my bio",
+             "wanna know your real potential? app link in my bio", "want your actual predicted height? download gopeak in bio"],
+  short: ["app in bio", "gopeak in my bio 📈", "app's in my bio", "download link in bio 🙏"],
+  personal: ["i made an app that predicts your height, it's in my bio", "my app gopeak is out now, link in my bio",
+             "my app gopeak predicts your height, download it in my bio", "made an app for exactly this, it's live in my bio"],
 };
 
 export function replyFor(text, username, style = pick(Object.keys(STYLES))) {
