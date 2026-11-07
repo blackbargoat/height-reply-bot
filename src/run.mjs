@@ -94,7 +94,14 @@ async function runAccount() {
         body: new URLSearchParams({ message, access_token: TOKEN }),
       });
       console.log(who, JSON.stringify(c.text), "→", message, res.status);
-      if (!res.ok) { console.log("Instagram refused a reply, pausing this account:", await res.text()); paused.add(TOKEN); break outer; }
+      if (!res.ok) {
+        const body = await res.text();
+        // Code 100 "Unsupported request" = that one comment can't take replies (deleted, hidden, restricted user).
+        // Skip it instead of pausing the whole account; only pause if it keeps happening (likely a token/permission issue).
+        if (/"code":100\b/.test(body) && ++badComments < 5) { console.log("Instagram can't reply to this comment, skipping it:", body); continue; }
+        console.log("Instagram refused a reply, pausing this account:", body); paused.add(TOKEN); break outer;
+      }
+      badComments = 0;
       const { id } = await res.json().catch(() => ({}));
       mentioned.add(who.toLowerCase());
       if (id) log.push({ id, parent: c.id, user: who, account: me.username, style: r.style, emoji: r.emoji, at: new Date().toISOString() });
@@ -172,6 +179,7 @@ async function checkEngagement(me) {
 }
 
 let failed = false, capped = false;
+let badComments = 0;
 const stats = [], paused = new Set(), postsDone = new Set(), postsByAccount = {};
 // One pass over every account; with LOOP_MIN set, keep passing so fresh comments get answered within a minute.
 const until = Date.now() + LOOP_MIN * 60e3;

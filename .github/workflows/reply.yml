@@ -43,8 +43,10 @@ jobs:
           git commit -qm "stats $(date -u +%F)"
           # another job (creator detector, a manual push) may have pushed meanwhile: rebase and retry
           for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && exit 0; sleep $((i * 5)); done; exit 1
-      - name: Keep catching up
-        if: steps.run.outputs.capped == 'true'
-        run: sleep 90 && gh workflow run reply.yml -R ${{ github.repository }}
+      # GitHub's cron often skips hours, so every run starts the next one itself (public repo: minutes are free).
+      # The concurrency group keeps it to one run at a time. Cancel a run in the Actions tab to stop the chain.
+      - name: Start the next run
+        if: ${{ !cancelled() && inputs.dry_run != true }}
+        run: sleep 30 && gh workflow run reply.yml -R ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
