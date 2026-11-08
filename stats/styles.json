@@ -1,14 +1,14 @@
 {
  "personal": {
   "replies": 3240,
-  "checked": 2719,
+  "checked": 2721,
   "likes": 303,
   "replied_back": 0
  },
  "short": {
   "replies": 3327,
-  "checked": 2450,
-  "likes": 265,
+  "checked": 2492,
+  "likes": 266,
   "replied_back": 0
  },
  "nudge": {
@@ -19,8 +19,8 @@
  },
  "question": {
   "replies": 3811,
-  "checked": 3013,
-  "likes": 246,
+  "checked": 3016,
+  "likes": 247,
   "replied_back": 0
  }
 }
