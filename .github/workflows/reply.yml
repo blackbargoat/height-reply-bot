@@ -17,7 +17,7 @@ permissions:
 jobs:
   reply:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 50   # a pass over 60 posts can run past LOOP_MIN; leave room so it never gets cut off
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,9 +44,9 @@ jobs:
           # another job (creator detector, a manual push) may have pushed meanwhile: rebase and retry
           for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && exit 0; sleep $((i * 5)); done; exit 1
       # GitHub's cron often skips hours, so every run starts the next one itself (public repo: minutes are free).
-      # The concurrency group keeps it to one run at a time. Cancel a run in the Actions tab to stop the chain.
+      # Runs even if this run failed or timed out, so the chain never breaks. To pause replies use HQ's bot mode "pause".
       - name: Start the next run
-        if: ${{ !cancelled() && inputs.dry_run != true }}
+        if: ${{ always() && inputs.dry_run != true }}
         run: sleep 30 && gh workflow run reply.yml -R ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
