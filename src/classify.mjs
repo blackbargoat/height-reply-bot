@@ -63,9 +63,8 @@ export const STYLES = {
           "app in my bio to predict your future height"],
   question: ["want to see how tall you'll actually get? app in my bio", "curious what your max is? app in my bio predicts it",
              "wanna know your future height? app in my bio", "want your predicted height? app in my bio"],
-  short: ["app in bio predicts it", "app in my bio 📈", "check the app in my bio", "future height app in bio"],
   personal: ["i made an app that predicts your future height, it's in my bio", "made an app for exactly this, it's in my bio",
-             "my app predicts your future height, link in bio", "i built an app that predicts this, it's in my bio"],
+             "i built an app that predicts this, it's in my bio"],
 };
 
 export function replyFor(text, username, style = pick(Object.keys(STYLES))) {
