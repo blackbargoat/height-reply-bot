@@ -1,12 +1,12 @@
 {
- "updated": "2026-11-09T06:51:27.900Z",
- "mode": "normal",
+ "updated": "2026-11-09T07:16:42.623Z",
+ "mode": "max",
  "setting": "auto",
  "paused_accounts": [],
  "backlog": {
-  "mav.tallteen": 0,
+  "mav.tallteen": 4535,
   "maverick.pranks": 0
  },
- "gap_ms": 2500,
- "cap": 60
+ "gap_ms": 1000,
+ "cap": 120
 }
