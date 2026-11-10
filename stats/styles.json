@@ -1,13 +1,13 @@
 {
  "personal": {
   "replies": 4446,
-  "checked": 4053,
+  "checked": 4054,
   "likes": 399,
   "replied_back": 0
  },
  "short": {
-  "replies": 3277,
-  "checked": 2909,
+  "replies": 3276,
+  "checked": 2908,
   "likes": 302,
   "replied_back": 0
  },
@@ -18,9 +18,9 @@
   "replied_back": 0
  },
  "question": {
-  "replies": 4634,
-  "checked": 4228,
-  "likes": 302,
+  "replies": 4636,
+  "checked": 4253,
+  "likes": 304,
   "replied_back": 0
  }
 }
