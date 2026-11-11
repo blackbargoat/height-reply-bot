@@ -501,5 +501,25 @@
   "updated": "2026-11-10T23:59:35.081Z",
   "views": 1346,
   "reach": 597
+ },
+ {
+  "day": "2026-11-11",
+  "account": "mav.tallteen",
+  "replies": 0,
+  "followers": 273,
+  "posts": 42,
+  "likes_recent": 5663,
+  "comments_recent": 27206,
+  "updated": "2026-11-11T00:21:48.116Z"
+ },
+ {
+  "day": "2026-11-11",
+  "account": "maverick.pranks",
+  "replies": 2,
+  "followers": 370,
+  "posts": 6,
+  "likes_recent": 3234,
+  "comments_recent": 22349,
+  "updated": "2026-11-11T00:21:48.116Z"
  }
 ]
