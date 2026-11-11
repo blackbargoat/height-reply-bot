@@ -505,14 +505,14 @@
  {
   "day": "2026-11-11",
   "account": "mav.tallteen",
-  "replies": 74,
+  "replies": 82,
   "followers": 277,
   "posts": 42,
-  "likes_recent": 5722,
-  "comments_recent": 27359,
-  "updated": "2026-11-11T09:00:11.644Z",
-  "views": 328,
-  "reach": 88
+  "likes_recent": 5724,
+  "comments_recent": 27367,
+  "updated": "2026-11-11T09:21:20.166Z",
+  "views": 514,
+  "reach": 228
  },
  {
   "day": "2026-11-11",
@@ -521,9 +521,9 @@
   "followers": 370,
   "posts": 6,
   "likes_recent": 3240,
-  "comments_recent": 22377,
-  "updated": "2026-11-11T09:00:11.644Z",
-  "views": 15,
-  "reach": 9
+  "comments_recent": 22379,
+  "updated": "2026-11-11T09:21:20.166Z",
+  "views": 41,
+  "reach": 20
  }
 ]
