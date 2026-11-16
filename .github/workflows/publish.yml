@@ -1,0 +1,26 @@
+name: Post approved GoPeak reels
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      check:
+        description: "Only test that the tokens can publish"
+        type: boolean
+        default: false
+concurrency: { group: publish, cancel-in-progress: false }
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node src/publish.mjs
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_ACCESS_TOKEN_2: ${{ secrets.IG_ACCESS_TOKEN_2 }}
+          IG_ACCESS_TOKEN_3: ${{ secrets.IG_ACCESS_TOKEN_3 }}
+          PIPE_KEY: ${{ secrets.PIPE_KEY }}
+          CHECK: ${{ inputs.check && '1' || '0' }}
