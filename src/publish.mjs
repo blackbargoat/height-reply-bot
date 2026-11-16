@@ -32,7 +32,8 @@ async function accounts() {
 }
 
 async function publish(acct, post) {
-  const params = { media_type: "REELS", video_url: post.video_url, caption: post.caption || "", share_to_feed: "true" };
+  const params = { media_type: "REELS", video_url: post.video_url, caption: post.caption || "" };
+  if (!post.trial) params.share_to_feed = "true"; // trial reels go to non-followers only, never the feed
   if (post.thumb_url) params.cover_url = post.thumb_url;
   if (post.trial) params.trial_params = JSON.stringify({ graduation_strategy: "MANUAL" });
   const c = await ig(acct.token, `${acct.id}/media`, params, "POST");
