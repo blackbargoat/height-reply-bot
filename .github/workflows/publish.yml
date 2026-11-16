@@ -1,7 +1,7 @@
 name: Post approved GoPeak reels
 on:
-  schedule:
-    - cron: "*/15 * * * *"
+  # schedule: (turned on once the pipeline is wired)
+  #   - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       check:
