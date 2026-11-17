@@ -11,16 +11,16 @@
   "likes": 138,
   "replied_back": 0
  },
- "nudge": {
-  "replies": 4024,
-  "checked": 3444,
-  "likes": 231,
-  "replied_back": 0
- },
  "question": {
   "replies": 3838,
-  "checked": 3473,
+  "checked": 3476,
   "likes": 172,
+  "replied_back": 0
+ },
+ "nudge": {
+  "replies": 4249,
+  "checked": 3453,
+  "likes": 232,
   "replied_back": 0
  }
 }
