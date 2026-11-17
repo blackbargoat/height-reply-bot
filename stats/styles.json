@@ -1,6 +1,6 @@
 {
  "personal": {
-  "replies": 5940,
+  "replies": 6001,
   "checked": 4293,
   "likes": 376,
   "replied_back": 0
@@ -11,16 +11,16 @@
   "likes": 129,
   "replied_back": 0
  },
- "nudge": {
-  "replies": 6541,
-  "checked": 4988,
-  "likes": 456,
-  "replied_back": 0
- },
  "question": {
   "replies": 6376,
   "checked": 4510,
   "likes": 302,
+  "replied_back": 0
+ },
+ "nudge": {
+  "replies": 6538,
+  "checked": 5098,
+  "likes": 464,
   "replied_back": 0
  }
 }
