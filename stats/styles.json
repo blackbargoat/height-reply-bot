@@ -1,26 +1,26 @@
 {
- "personal": {
-  "replies": 6154,
-  "checked": 4895,
-  "likes": 441,
-  "replied_back": 0
- },
  "nudge": {
-  "replies": 6734,
-  "checked": 5814,
+  "replies": 6783,
+  "checked": 5816,
   "likes": 536,
   "replied_back": 0
  },
  "question": {
   "replies": 6519,
-  "checked": 5338,
-  "likes": 374,
+  "checked": 5417,
+  "likes": 383,
   "replied_back": 0
  },
  "short": {
   "replies": 1736,
   "checked": 1406,
   "likes": 126,
+  "replied_back": 0
+ },
+ "personal": {
+  "replies": 6152,
+  "checked": 4904,
+  "likes": 441,
   "replied_back": 0
  }
 }
