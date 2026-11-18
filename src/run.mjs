@@ -137,7 +137,7 @@ async function collectPosts(me) {
   let all = {}; try { all = JSON.parse(fs.readFileSync(POSTS_FILE, "utf8")); } catch {}
   // Every 2 hours is plenty and keeps Instagram API calls low (the comment checks already use a lot)
   const last = Math.max(0, ...Object.values(all).filter((p) => p.account === me.username).map((p) => Date.parse(p.updated) || 0));
-  if (Date.now() - last < 2 * 3600e3 && !process.env.FORCE_POSTS) { console.log(`posts @${me.username}: fresh, skipped`); return; }
+  if (Date.now() - last < 30 * 60e3 && !process.env.FORCE_POSTS) { console.log(`posts @${me.username}: fresh, skipped`); return; }
   const media = await get(`${me.user_id}/media`, { fields: "id,timestamp,permalink,media_type,media_product_type,like_count,comments_count,caption,thumbnail_url,media_url", limit: 25 });
   const day = new Date().toISOString().slice(0, 10);
   for (const m of media.data ?? []) {
