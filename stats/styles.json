@@ -1,13 +1,7 @@
 {
- "question": {
-  "replies": 6502,
-  "checked": 5028,
-  "likes": 342,
-  "replied_back": 0
- },
  "short": {
-  "replies": 1741,
-  "checked": 1411,
+  "replies": 1740,
+  "checked": 1410,
   "likes": 127,
   "replied_back": 0
  },
@@ -19,8 +13,14 @@
  },
  "nudge": {
   "replies": 6734,
-  "checked": 5689,
-  "likes": 520,
+  "checked": 5809,
+  "likes": 534,
+  "replied_back": 0
+ },
+ "question": {
+  "replies": 6519,
+  "checked": 5026,
+  "likes": 342,
   "replied_back": 0
  }
 }
