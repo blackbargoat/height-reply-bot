@@ -9,6 +9,7 @@ on:
         type: boolean
         default: false
 concurrency: { group: publish, cancel-in-progress: false }
+permissions: { contents: read, actions: write }
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -24,3 +25,10 @@ jobs:
           IG_ACCESS_TOKEN_3: ${{ secrets.IG_ACCESS_TOKEN_3 }}
           PIPE_KEY: ${{ secrets.PIPE_KEY }}
           CHECK: ${{ inputs.check && '1' || '0' }}
+      # GitHub's cron skips most runs (posts went out hours late), so each run starts the next one after ~4 min.
+      # The cron above stays as a backup in case the chain ever breaks. Public repo: minutes are free.
+      - name: Start the next check
+        if: ${{ !inputs.check }}
+        run: sleep 240 && gh workflow run publish.yml -R ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
