@@ -36,6 +36,11 @@ const STYLE_IDS = Object.keys(STYLES);
 const STYLE = STYLES[process.env.FORCE_STYLE] ? process.env.FORCE_STYLE : STYLE_IDS[Math.floor(Date.now() / 3600e3) % STYLE_IDS.length];
 const LOG = "stats/replies.json";       // one row per reply the bot sent, with likes / reply-backs filled in later
 let log = []; try { log = JSON.parse(fs.readFileSync(LOG, "utf8")); } catch {}
+// Comments Instagram won't take a reply on (code 100: deleted, hidden, restricted user). Remembered so they're never
+// retried; before this, the same few dead comments were retried first every run and tripped the 5-in-a-row pause.
+const DEAD = "stats/dead.json";
+let dead = new Set(); try { dead = new Set(JSON.parse(fs.readFileSync(DEAD, "utf8"))); } catch {}
+const saveDead = () => fs.writeFileSync(DEAD, JSON.stringify([...dead].slice(-20000)));
 const CHECK_AFTER_H = 6, CHECKS_PER_RUN = 40;
 
 let TOKEN;
@@ -77,7 +82,7 @@ async function runAccount() {
       if (c.timestamp && Date.now() - Date.parse(c.timestamp) < 48 * 3600e3) inc[c.id] = new Date(c.timestamp).toISOString().slice(0, 13) + ":00:00Z";
     }
     for (const c of comments.data ?? []) {
-      if (answered.has(c.id) || mentioned.has((c.from?.username ?? c.username ?? "").toLowerCase())) continue;
+      if (dead.has(c.id) || answered.has(c.id) || mentioned.has((c.from?.username ?? c.username ?? "").toLowerCase())) continue;
       const who = c.from?.username ?? c.username;
       if (who === me.username || c.from?.id === me.user_id) continue;
       const replies = c.replies?.data ?? [];
@@ -98,7 +103,10 @@ async function runAccount() {
         const body = await res.text();
         // Code 100 "Unsupported request" = that one comment can't take replies (deleted, hidden, restricted user).
         // Skip it instead of pausing the whole account; only pause if it keeps happening (likely a token/permission issue).
-        if (/"code":100\b/.test(body) && ++badComments < 5) { console.log("Instagram can't reply to this comment, skipping it:", body); continue; }
+        if (/"code":100\b/.test(body)) {
+          dead.add(c.id); saveDead();
+          if (++badComments < 15) { console.log("Instagram can't reply to this comment, skipping it for good:", body); continue; }
+        }
         console.log("Instagram refused a reply, pausing this account:", body); paused.add(TOKEN); break outer;
       }
       badComments = 0;
