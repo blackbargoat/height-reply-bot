@@ -1,13 +1,7 @@
 {
- "nudge": {
-  "replies": 11037,
-  "checked": 10589,
-  "likes": 909,
-  "replied_back": 0
- },
  "personal": {
-  "replies": 10483,
-  "checked": 9919,
+  "replies": 10511,
+  "checked": 9954,
   "likes": 847,
   "replied_back": 0
  },
@@ -21,6 +15,12 @@
   "replies": 11291,
   "checked": 10410,
   "likes": 729,
+  "replied_back": 0
+ },
+ "nudge": {
+  "replies": 11035,
+  "checked": 10587,
+  "likes": 909,
   "replied_back": 0
  }
 }
