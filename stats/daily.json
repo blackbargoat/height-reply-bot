@@ -841,25 +841,25 @@
  {
   "day": "2026-11-25",
   "account": "mav.tallteen",
-  "replies": 136,
+  "replies": 164,
   "followers": 431,
   "posts": 42,
-  "likes_recent": 9006,
-  "comments_recent": 41337,
-  "views": 857,
-  "reach": 469,
-  "updated": "2026-11-25T09:19:14.797Z"
+  "likes_recent": 9010,
+  "comments_recent": 41364,
+  "views": 1585,
+  "reach": 840,
+  "updated": "2026-11-25T09:47:10.177Z"
  },
  {
   "day": "2026-11-25",
   "account": "maverick.pranks",
-  "replies": 348,
+  "replies": 377,
   "followers": 944,
   "posts": 9,
-  "likes_recent": 11869,
-  "comments_recent": 71824,
-  "updated": "2026-11-25T09:19:14.797Z",
-  "views": 1025,
-  "reach": 414
+  "likes_recent": 11879,
+  "comments_recent": 71858,
+  "updated": "2026-11-25T09:47:10.177Z",
+  "views": 1120,
+  "reach": 507
  }
 ]
