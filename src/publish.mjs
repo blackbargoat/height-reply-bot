@@ -1,4 +1,4 @@
-// GoPeak HQ pipeline -> Instagram Reels publisher. Runs in GitHub Actions every 15 min.
+// GoPeak HQ pipeline (+ @gopeak.app drops) -> Instagram Reels publisher. Runs in GitHub Actions every 15 min.
 // Picks approved posts whose slot has arrived (rpc pipe_worker_due), publishes each as a Reel
 // (trial reel when post.trial), and reports back (rpc pipe_worker_done). CHECK=1 only tests token access.
 const GRAPH = "https://graph.instagram.com/v23.0";
@@ -32,12 +32,31 @@ async function accounts() {
 }
 
 async function publish(acct, post) {
-  const params = { media_type: "REELS", video_url: post.video_url, caption: post.caption || "" };
+  const params = { media_type: "REELS", caption: post.caption || "" };
+  // multi-part drops (@gopeak.app files over 45 MB): join the parts here and upload the bytes to Instagram
+  let bytes = null;
+  if ((post.parts || 1) > 1) {
+    const base = post.video_url.replace(/part-00\.mp4$/, "");
+    const bufs = [];
+    for (let i = 0; i < post.parts; i++) {
+      const r = await fetch(`${base}part-${String(i).padStart(2, "0")}.mp4`);
+      if (!r.ok) throw new Error(`part ${i} download ${r.status}`);
+      bufs.push(Buffer.from(await r.arrayBuffer()));
+    }
+    bytes = Buffer.concat(bufs);
+    params.upload_type = "resumable";
+  } else params.video_url = post.video_url;
   if (!post.trial) params.share_to_feed = "true"; // trial reels go to non-followers only, never the feed
   if (post.thumb_url) params.cover_url = post.thumb_url;
   // SS_PERFORMANCE: Instagram moves the trial reel to the feed by itself if it does well with non-followers
   if (post.trial) params.trial_params = JSON.stringify({ graduation_strategy: "SS_PERFORMANCE" });
   const c = await ig(acct.token, `${acct.id}/media`, params, "POST");
+  if (bytes) {
+    const up = await fetch(c.uri || `https://rupload.facebook.com/ig-api-upload/v23.0/${c.id}`, { method: "POST",
+      headers: { Authorization: `OAuth ${acct.token}`, offset: "0", file_size: String(bytes.length) }, body: bytes });
+    const uj = await up.json().catch(() => ({}));
+    if (!up.ok || uj.success === false) throw new Error(`upload ${up.status}: ${JSON.stringify(uj).slice(0, 300)}`);
+  }
   for (let i = 0; i < 60; i++) { // up to ~5 min for Instagram to fetch + process the video
     await sleep(5000);
     const s = await ig(acct.token, c.id, { fields: "status_code,status" });
