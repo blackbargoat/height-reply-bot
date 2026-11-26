@@ -878,13 +878,13 @@
   "day": "2026-11-26",
   "account": "gopeak.app",
   "replies": 0,
-  "followers": 226,
+  "followers": 227,
   "posts": 3,
   "likes_recent": 2,
   "comments_recent": 0,
-  "updated": "2026-11-26T10:56:13.114Z",
-  "views": 2088,
-  "reach": 3
+  "updated": "2026-11-26T11:17:41.172Z",
+  "views": 2267,
+  "reach": 4
  },
  {
   "day": "2026-11-26",
@@ -893,21 +893,21 @@
   "followers": 499,
   "posts": 43,
   "likes_recent": 9624,
-  "comments_recent": 44137,
-  "updated": "2026-11-26T10:56:13.114Z",
-  "views": 1107,
-  "reach": 543
+  "comments_recent": 44142,
+  "updated": "2026-11-26T11:17:41.172Z",
+  "views": 1296,
+  "reach": 638
  },
  {
   "day": "2026-11-26",
   "account": "maverick.pranks",
-  "replies": 500,
-  "followers": 980,
+  "replies": 509,
+  "followers": 981,
   "posts": 9,
-  "likes_recent": 12447,
-  "comments_recent": 75242,
-  "updated": "2026-11-26T10:56:13.114Z",
-  "views": 4710,
-  "reach": 2518
+  "likes_recent": 12451,
+  "comments_recent": 75262,
+  "updated": "2026-11-26T11:17:41.172Z",
+  "views": 5198,
+  "reach": 2741
  }
 ]
