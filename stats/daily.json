@@ -873,5 +873,35 @@
   "updated": "2026-11-25T23:58:31.208Z",
   "views": 32575,
   "reach": 16526
+ },
+ {
+  "day": "2026-11-26",
+  "account": "gopeak.app",
+  "replies": 0,
+  "followers": 221,
+  "posts": 3,
+  "likes_recent": 1,
+  "comments_recent": 0,
+  "updated": "2026-11-26T00:33:02.871Z"
+ },
+ {
+  "day": "2026-11-26",
+  "account": "mav.tallteen",
+  "replies": 2,
+  "followers": 495,
+  "posts": 42,
+  "likes_recent": 9570,
+  "comments_recent": 43960,
+  "updated": "2026-11-26T00:33:02.871Z"
+ },
+ {
+  "day": "2026-11-26",
+  "account": "maverick.pranks",
+  "replies": 18,
+  "followers": 970,
+  "posts": 9,
+  "likes_recent": 12277,
+  "comments_recent": 74185,
+  "updated": "2026-11-26T00:33:02.871Z"
  }
 ]
