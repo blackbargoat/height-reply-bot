@@ -914,36 +914,36 @@
   "day": "2026-11-27",
   "account": "gopeak.app",
   "replies": 0,
-  "followers": 250,
+  "followers": 251,
   "posts": 3,
   "likes_recent": 2,
   "comments_recent": 0,
-  "updated": "2026-11-27T18:31:40.749Z",
-  "views": 6661,
-  "reach": 21
+  "updated": "2026-11-27T19:08:52.191Z",
+  "views": 6985,
+  "reach": 22
  },
  {
   "day": "2026-11-27",
   "account": "mav.tallteen",
-  "replies": 298,
+  "replies": 315,
   "followers": 513,
   "posts": 43,
-  "likes_recent": 9915,
-  "comments_recent": 45822,
-  "updated": "2026-11-27T18:31:40.749Z",
-  "views": 10473,
-  "reach": 5740
+  "likes_recent": 9920,
+  "comments_recent": 45856,
+  "updated": "2026-11-27T19:08:52.191Z",
+  "views": 11323,
+  "reach": 6293
  },
  {
   "day": "2026-11-27",
   "account": "maverick.pranks",
-  "replies": 356,
-  "followers": 1003,
+  "replies": 368,
+  "followers": 1004,
   "posts": 9,
   "likes_recent": 12754,
-  "comments_recent": 77053,
-  "updated": "2026-11-27T18:31:40.749Z",
-  "views": 8116,
-  "reach": 3913
+  "comments_recent": 77072,
+  "updated": "2026-11-27T19:08:52.191Z",
+  "views": 8427,
+  "reach": 4046
  }
 ]
