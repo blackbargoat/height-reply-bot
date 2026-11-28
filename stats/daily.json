@@ -954,32 +954,32 @@
   "posts": 3,
   "likes_recent": 2,
   "comments_recent": 0,
-  "updated": "2026-11-28T11:11:11.655Z",
-  "views": 1579,
-  "reach": 5
+  "updated": "2026-11-28T11:41:18.306Z",
+  "views": 1875,
+  "reach": 6
  },
  {
   "day": "2026-11-28",
   "account": "mav.tallteen",
-  "replies": 166,
+  "replies": 179,
   "followers": 516,
   "posts": 43,
-  "likes_recent": 10007,
-  "comments_recent": 46481,
-  "views": 1550,
-  "reach": 785,
-  "updated": "2026-11-28T11:11:11.655Z"
+  "likes_recent": 10008,
+  "comments_recent": 46506,
+  "views": 1982,
+  "reach": 1014,
+  "updated": "2026-11-28T11:41:18.306Z"
  },
  {
   "day": "2026-11-28",
   "account": "maverick.pranks",
-  "replies": 182,
+  "replies": 194,
   "followers": 1011,
   "posts": 9,
-  "likes_recent": 12840,
-  "comments_recent": 77628,
-  "updated": "2026-11-28T11:11:11.655Z",
-  "views": 1584,
-  "reach": 786
+  "likes_recent": 12843,
+  "comments_recent": 77647,
+  "updated": "2026-11-28T11:41:18.306Z",
+  "views": 1975,
+  "reach": 972
  }
 ]
