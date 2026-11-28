@@ -950,36 +950,36 @@
   "day": "2026-11-28",
   "account": "gopeak.app",
   "replies": 0,
-  "followers": 252,
+  "followers": 253,
   "posts": 3,
   "likes_recent": 2,
   "comments_recent": 0,
-  "updated": "2026-11-28T10:25:06.186Z",
-  "views": 1050,
-  "reach": 3
+  "updated": "2026-11-28T10:48:41.864Z",
+  "views": 1334,
+  "reach": 5
  },
  {
   "day": "2026-11-28",
   "account": "mav.tallteen",
-  "replies": 145,
+  "replies": 154,
   "followers": 516,
   "posts": 43,
-  "likes_recent": 9994,
-  "comments_recent": 46425,
-  "views": 955,
-  "reach": 486,
-  "updated": "2026-11-28T10:25:06.186Z"
+  "likes_recent": 10002,
+  "comments_recent": 46461,
+  "views": 1306,
+  "reach": 636,
+  "updated": "2026-11-28T10:48:41.864Z"
  },
  {
   "day": "2026-11-28",
   "account": "maverick.pranks",
-  "replies": 166,
+  "replies": 176,
   "followers": 1011,
   "posts": 9,
-  "likes_recent": 12837,
-  "comments_recent": 77596,
-  "updated": "2026-11-28T10:25:06.186Z",
-  "views": 1158,
-  "reach": 560
+  "likes_recent": 12840,
+  "comments_recent": 77609,
+  "updated": "2026-11-28T10:48:41.864Z",
+  "views": 1408,
+  "reach": 697
  }
 ]
