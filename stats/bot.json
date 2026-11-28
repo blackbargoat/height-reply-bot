@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-27T23:30:46.383Z",
- "mode": "normal",
+ "updated": "2026-11-28T00:06:28.976Z",
+ "mode": "max",
  "setting": "auto",
  "paused_accounts": [],
  "backlog": {
@@ -8,6 +8,6 @@
   "maverick.pranks": 0,
   "gopeak.app": 0
  },
- "gap_ms": 2500,
- "cap": 60
+ "gap_ms": 1000,
+ "cap": 120
 }
